@@ -306,7 +306,7 @@ private:
  * 4º Calculate new duty cycle according the distance
  * 5º Calculate new frequency according the distance
 */
-void triggerUltrasonicSensorFunction()
+void handleUltrasonicSensor()
 {
     // Calibration
     sonar.reset();
@@ -400,7 +400,7 @@ int main(void)
     // Switch on led by default
     myBuzzerLed = 1;
 
-    thread_1.start(triggerUltrasonicSensorFunction);
+    thread_1.start(handleUltrasonicSensor);
     
     mbed_trace_init();
 

@@ -1,18 +1,3 @@
-/* mbed Microcontroller Library
- * Copyright (c) 2017-2019 ARM Limited
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 #include "mbed.h"
 #include "platform/Callback.h"
 #include "events/EventQueue.h"
@@ -22,12 +7,10 @@
 #include <iostream>
 #include "rtos.h"
 
-
 using mbed::callback;
 using namespace std::literals::chrono_literals;
-// DigitalOut ledRed(A2);
+
 Thread thread_1;
-Thread thread_2(osPriorityNormal1); // 24 + 1
 
 /////////////////  buzzer  /////////////////
 // PIN PWM ARD11 exclusive to PWM
@@ -45,7 +28,7 @@ int freqMyBuzzer = 350;
 float levelMyBuzzer = 0.05f;
 
 /////////////////  ultrasonic sensor HC-SR04 /////////////////
-// Min range 2 cm
+// Min range 2 cm, max 4 m
 Timer sonar;
 DigitalOut triggerUltrasonicSensor(A1);
 DigitalIn  echoUltrasonicSensor(A0);
@@ -92,7 +75,7 @@ public:
         ble_error_t err = _server->addService(_my_guide_gatt_service);
 
         if (err) {
-            printf("Error %u during demo service registration.\r\n", err);
+            printf("Error %u during service My Guide registration.\r\n", err);
             return;
         }
 
@@ -113,7 +96,7 @@ private:
      */
     void onDataSent(const GattDataSentCallbackParams &params) override
     {
-        printf("sent updates\r\n");
+        // printf("sent updates\r\n");
     }
 
     /**
@@ -163,7 +146,7 @@ private:
      */
     void onUpdatesEnabled(const GattUpdatesEnabledCallbackParams &params) override
     {
-        printf("update enabled on handle %d\r\n", params.attHandle);
+        // printf("update enabled on handle %d\r\n", params.attHandle);
     }
 
     /**
@@ -212,7 +195,7 @@ private:
             e->authorizationReply = AUTH_CALLBACK_REPLY_ATTERR_INVALID_ATT_VAL_LENGTH;
             return;
         }
-        // printf("e->data[0]: %d\r\n", e->data[0]);
+        printf("Received: %d\r\n", e->data[0]);
         // printf("e->data[1]: %d\r\n", e->data[1]);
 
         // First service
@@ -315,6 +298,14 @@ private:
     ReadWriteNotifyIndicateCharacteristic<uint8_t> switchOnLed;
 };
 
+/**
+ * Handle ultrasonic sensor
+ * 1º Calibration sensor
+ * 2º Send pulse to trigger
+ * 3º Receive pulse of sensor (echo)
+ * 4º Calculate new duty cycle according the distance
+ * 5º Calculate new frequency according the distance
+*/
 void triggerUltrasonicSensorFunction()
 {
     // Calibration
@@ -349,7 +340,7 @@ void triggerUltrasonicSensorFunction()
         //wait for echo low
         while (echoUltrasonicSensor==1) {};
         sonar.stop();
-        distanceUltrasonicSensor = (sonar.elapsed_time().count() - correctionUltrasonicSensor)/58.0;  // return in us
+        distanceUltrasonicSensor = (sonar.elapsed_time().count() - correctionUltrasonicSensor)/58.0;
         
         printf("%d cm\r\n", distanceUltrasonicSensor);
 
@@ -390,6 +381,7 @@ void triggerUltrasonicSensorFunction()
                 // auto newDutyCycle = (distanceUltrasonicSensor * (95 - 5)) / (highRiskDistance - mediumRiskDistance);
                 // myBuzzer.write(newDutyCycle);
             }
+
         // Without risk 
         }else if(distanceUltrasonicSensor > mediumRiskDistance){
             // Disable buzzer

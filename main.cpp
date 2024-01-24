@@ -35,13 +35,13 @@ DigitalIn  echoUltrasonicSensor(A0);
 int correctionUltrasonicSensor = 0;
 int distanceUltrasonicSensor = 0;
 int distanceUltrasonicSensorBackup = 0;
-int freqUpdateUltrasonicSensor = 1000;      // 1000 ms
+int freqUpdateUltrasonicSensor = 300;      // 300 ms
 
 /////////////////  threshold /////////////////
-// medium risk             15 cm
-int mediumRiskDistance = 15;
-// Risk high                5 cm
-int highRiskDistance = 5;
+// medium risk             80 cm
+int mediumRiskDistance = 80;
+// Risk high                3 cm
+int highRiskDistance = 3;
 
 /**
  * A MyGuideService service that demonstrate how to
@@ -349,6 +349,7 @@ void handleUltrasonicSensor()
         if(highRiskDistance <= distanceUltrasonicSensor && distanceUltrasonicSensor <= mediumRiskDistance){
             // Active buzzer
             if(activeMyBuzzer){
+                myBuzzerLed = 1;
                 myBuzzer.resume();
                 // 1º Calculate new duty cycle
                 difference = mediumRiskDistance - distanceUltrasonicSensor;
@@ -386,6 +387,7 @@ void handleUltrasonicSensor()
         }else if(distanceUltrasonicSensor > mediumRiskDistance){
             // Disable buzzer
             // activeMyBuzzer = 0;
+            myBuzzerLed = 0;
             myBuzzer.suspend();
         }
 
@@ -395,7 +397,7 @@ void handleUltrasonicSensor()
 
 int main(void)
 {
-    printf("Start v78\r\n");    
+    printf("Start v82\r\n");    
 
     // Switch on led by default
     myBuzzerLed = 1;
